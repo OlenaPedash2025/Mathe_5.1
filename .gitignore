@@ -1,0 +1,16 @@
+.bash_history
+.python_history
+.history
+
+.history/
+*.code-workspace
+
+.env
+.secrets
+
+__pycache__/
+.mypy_cache/
+
+.vscode/
+.idea/
+venv/

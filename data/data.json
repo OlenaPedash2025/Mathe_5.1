@@ -1,0 +1,7 @@
+[
+  { "name": "Elite_supplier", "vector": [10.0, 10.0, 10.0, 10.0] },
+  { "name": "Cheap_supplier", "vector": [2.0, 3.5, 2.0, 3.0] },
+  { "name": "Balanced_partner", "vector": [7.5, 8.0, 7.5, 8.5] },
+  { "name": "Scale_up_pro", "vector": [4.0, 4.0, 4.0, 4.0] },
+  { "name": "Chaos_vendor", "vector": [9.0, 2.5, 1.5, 9.0] }
+]
