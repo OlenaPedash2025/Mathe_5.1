@@ -46,9 +46,9 @@ if __name__ == "__main__":
 
     print(f"Target Profile: {query_vector}\n")
     
-    for name, vector in data.items():
-        distance = matcher.euclidean_distance(query_vector, vector)
-        similarity = matcher.cosine_similarity(query_vector, vector)
+    analysis_results = matcher.run_analysis(query_vector)
+    
+    for name, distance, similarity in analysis_results:
         print(f"{name}: Distance = {distance:.3f}, Similarity = {similarity:.3f}")  
 
 
