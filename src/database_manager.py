@@ -1,61 +1,50 @@
 import sqlite3
-from data_provider import JSONDataProvider
 
+class DatabaseManager:
+    def __init__(self, db_path):
+        self.db_path = db_path
 
-
-def create_database():
-    raw_data = JSONDataProvider.load_from_file("data/data.json")
-    if not raw_data:
-        print("No data to populate the database.")
-        return
+    def create_database(self, prepared_data: list):
+        if not prepared_data:
+            print("No data to insert into the database.")
+            return
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("DROP TABLE IF EXISTS suppliers")
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS suppliers (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        price_score REAL NOT NULL,
+                        quality_score REAL NOT NULL,
+                        eco_score REAL NOT NULL,
+                        delivery_score REAL NOT NULL
+                    )
+                ''')
+                cursor.executemany('''
+                    INSERT INTO suppliers (name, price_score, quality_score, eco_score, delivery_score)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', prepared_data)
+                conn.commit()
+                print("Database 'my_database.db' created and populated successfully!")
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
     
-    prepared_data = []
-    for item in raw_data:
-        name = item.get("name")
-        vector = item.get("vector", [])
-        if len(vector) != 4:
-            print(f"Skipping {name}: Expected 4 dimensions, got {len(vector)}")
-            continue
-        prepared_data.append((name, *vector))
+    
+    def fetch_all_suppliers(self):
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT name, price_score, quality_score, eco_score, delivery_score FROM suppliers")
+                rows = cursor.fetchall()
+                return {row[0]: list(row[1:]) for row in rows}
+            # result = {}
+            # for row in rows:
+            #     name = row[0]
+            #     vector = list(row[1:])
+            #     result[name] = vector
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+            return {}
         
-            
-    conn = sqlite3.connect('my_database.db')
-    cursor = conn.cursor()
-    
-    cursor.execute("DROP TABLE IF EXISTS suppliers")
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS suppliers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            price_score REAL NOT NULL,
-            quality_score REAL NOT NULL,
-            eco_score REAL NOT NULL,
-            delivery_score REAL NOT NULL
-        )
-    ''')
-    
-    cursor.executemany('''
-        INSERT INTO suppliers (name, price_score, quality_score, eco_score, delivery_score)
-        VALUES (?, ?, ?, ?, ?)
-    ''', prepared_data)
-    conn.commit()
-    conn.close()
-    print("Database 'my_database.db' created and populated successfully!")
-
-def fetch_data(db_path):
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name, price_score, quality_score, eco_score, delivery_score FROM suppliers")
-        rows = cursor.fetchall()
-        conn.close()
-        return {row[0]: list(row[1:]) for row in rows}
-    # result = {}
-    # for row in rows:
-    #     name = row[0]
-    #     vector = list(row[1:])
-    #     result[name] = vector
-    except sqlite3.OperationalError as e:
-        print(f"Database error: {e}")
-        return {}   

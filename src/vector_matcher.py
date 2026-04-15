@@ -1,7 +1,7 @@
 import math
 from data_provider import JSONDataProvider
-from database_manager import create_database, fetch_data
-
+from data_transformer import DataTransformer
+from database_manager import DatabaseManager
 class VectorMatcher:
     def __init__(self, data):
         self.supplies = data
@@ -30,12 +30,23 @@ class VectorMatcher:
     
     
 if __name__ == "__main__":
-    print("Creating and populating the database...")
-    create_database()
+    # Load data
+    raw_data = JSONDataProvider.load_from_file("data/data.json")
+    if raw_data is None:
+        print("No data loaded. Exiting.")
+        exit(1)
+    # Transform data
+    transformer = DataTransformer()
+    prepared_data = transformer.transform_to_db_format(raw_data)
+    # Create and populate database
+    db_manager = DatabaseManager('my_database.db')
+    db_manager.create_database(prepared_data)
+    # Fetch data from database
     print("\nFetching data from database...")   
-    data = fetch_data('my_database.db')
+    data = db_manager.fetch_all_suppliers()
     for name, vector in data.items():
         print(f"{name}: {vector}")
+    # Run vector matching analysis
     matcher = VectorMatcher(data)
     query_vector = JSONDataProvider.load_from_file("data/query.json")
     if isinstance(query_vector, dict) and "target_profile" in query_vector:
